@@ -1,0 +1,16 @@
+.DS_Store
+tmp
+out
+*.iml
+
+# Exclude the root conf folder
+# but allow to store special applicationContext.<something here>.properties
+# Allow shared runConfigurations
+.idea/*
+!.idea/runConfigurations
+
+# Exclude all folders named "target".
+# WARNING! This is a risk. There is no way to exclude the target folders in a better way.
+# An exclude rule like "!src/main/*/target" does not work.
+# So DO NOT USE "target" as a folder oder package name!
+target

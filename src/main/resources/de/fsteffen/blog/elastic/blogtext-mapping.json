@@ -1,0 +1,15 @@
+{
+  "blog": {
+    "_source": {
+      "includes" : [
+        "content",
+        "title",
+        "authorId",
+        "timestamp"
+      ],
+      "excludes": [
+        "id"
+      ]
+    }
+  }
+}
