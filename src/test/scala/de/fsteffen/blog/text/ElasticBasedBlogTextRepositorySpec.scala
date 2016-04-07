@@ -8,9 +8,9 @@ import de.fsteffen.blog.elastic.text.ElasticBasedBlogTextRepository
 import org.apache.commons.io.FileUtils
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.node.{Node, NodeBuilder}
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSuite, Matchers}
 
-class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll with Matchers {
+class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
   var _blogTextRepo:ElasticBasedBlogTextRepository = _
   var _elasticNode: Node = _
@@ -36,20 +36,16 @@ class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll
     FileUtils.deleteDirectory(_tmpDir)
   }
 
-  test("testSave") {
-    val savedBlogId = _blogTextRepo.save(BlogText(
-      content = "content",
-      title = "title",
-      authorId = 1,
-      timestamp = System.currentTimeMillis()
-    ))
+  override protected def afterEach(): Unit = {
+    _elasticNode.client().admin().indices().prepareDelete("test").execute().actionGet()
+  }
 
+  test("testSave") {
+    val savedBlogId = _blogTextRepo.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
     savedBlogId should not be empty
   }
 
-
   test("testFindByid") {
-
     val savedBlogText: BlogText = BlogText(
       content = "content",
       title = "title",
@@ -69,12 +65,7 @@ class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll
   }
 
   test("testUpdateBlog") {
-    val returnedBlogId = _blogTextRepo.save(BlogText(
-      content = "content",
-      title = "title",
-      authorId = 1,
-      timestamp = System.currentTimeMillis()
-    ))
+    val returnedBlogId = _blogTextRepo.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
 
     val updatedBlogText: BlogText = _blogTextRepo.findById(returnedBlogId)
     updatedBlogText.content = "new content"
@@ -83,6 +74,26 @@ class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll
     val updatedBlogTextFromDb: BlogText = _blogTextRepo.findById(returnedBlogId)
     updatedBlogTextFromDb.id should equal(updatedBlogText.id)
     updatedBlogTextFromDb.content should equal("new content")
+  }
+
+  test("testFindAll") {
+    _blogTextRepo.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
+    _blogTextRepo.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
+
+    _elasticNode.client().admin().indices().prepareRefresh().execute().actionGet()
+    val allBlogTexts: Seq[BlogText] = _blogTextRepo.findAll
+    allBlogTexts should have size 2
+  }
+
+  private object ElasticBasedBlogTextRepositorySpec {
+    def anyBlogText: BlogText = {
+      BlogText(
+        content = "content",
+        title = "title",
+        authorId = 1,
+        timestamp = System.currentTimeMillis()
+      )
+    }
   }
 
 }

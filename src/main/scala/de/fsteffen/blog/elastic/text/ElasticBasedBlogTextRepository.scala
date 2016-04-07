@@ -13,4 +13,7 @@ class ElasticBasedBlogTextRepository(clientFacade: ClientFacade) extends BlogTex
     clientFacade.getDocument("test", "blog", id, classOf[BlogText])
   }
 
+  override def findAll: Seq[BlogText] = {
+    clientFacade.getDocuments("test", "blog", classOf[BlogText])
+  }
 }
