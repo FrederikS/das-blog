@@ -18,8 +18,8 @@ class ClientFacade(client: Client) {
     .addMapping("blog", Source.fromInputStream(getClass.getResourceAsStream("/de/fsteffen/blog/elastic/blogtext-mapping.json")).mkString)
     .execute().get()
 
-  def saveDocument(index: String, typee: String, doc: Any):String = {
-    client.prepareIndex(index, typee)
+  def saveDocument[T <: Entity](index: String, typee: String, doc: T):String = {
+    client.prepareIndex(index, typee, doc.getId)
       .setSource(toJson(doc))
       .get
       .getId

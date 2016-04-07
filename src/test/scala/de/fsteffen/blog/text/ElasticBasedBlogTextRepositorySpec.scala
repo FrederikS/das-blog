@@ -68,4 +68,21 @@ class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll
     blogForId.timestamp should equal(savedBlogText.timestamp)
   }
 
+  test("testUpdateBlog") {
+    val returnedBlogId = _blogTextRepo.save(BlogText(
+      content = "content",
+      title = "title",
+      authorId = 1,
+      timestamp = System.currentTimeMillis()
+    ))
+
+    val updatedBlogText: BlogText = _blogTextRepo.findById(returnedBlogId)
+    updatedBlogText.content = "new content"
+    _blogTextRepo.save(updatedBlogText)
+
+    val updatedBlogTextFromDb: BlogText = _blogTextRepo.findById(returnedBlogId)
+    updatedBlogTextFromDb.id should equal(updatedBlogText.id)
+    updatedBlogTextFromDb.content should equal("new content")
+  }
+
 }
