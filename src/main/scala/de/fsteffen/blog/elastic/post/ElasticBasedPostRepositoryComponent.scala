@@ -14,7 +14,7 @@ trait ElasticBasedPostRepositoryComponent extends PostRepositoryComponent { this
       clientFacade.saveDocument("test", "blog", blogText)
     }
 
-    override def findById(id: String): Future[Post] = {
+    override def findById(id: String): Future[Option[Post]] = {
       clientFacade.getDocument("test", "blog", id, classOf[Post])
     }
 

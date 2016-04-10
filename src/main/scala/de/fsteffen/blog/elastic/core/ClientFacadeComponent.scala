@@ -5,7 +5,6 @@ import java.util
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.search.SearchResponse
 
 import scala.concurrent.Future
@@ -33,13 +32,15 @@ trait ClientFacadeComponent { this: ClientComponent =>
       }
     }
 
-    def getDocument[T <: Entity](index: String, typee: String, id: String, clazz: Class[T]): Future[T] = {
+    def getDocument[T <: Entity](index: String, typee: String, id: String, clazz: Class[T]): Future[Option[T]] = {
       Future {
-        val response: GetResponse = client.prepareGet(index, typee, id).get()
-        fromJson(new SourceAndIdProvider {
-          override def getSourceAsMap: util.Map[String, AnyRef] = response.getSourceAsMap
-          override def getId: String = response.getId
-        }, clazz)
+        client.prepareGet(index, typee, id).get() match {
+          case response if response.isSourceEmpty => Option.empty[T]
+          case response => Option(fromJson(new SourceAndIdProvider {
+            override def getSourceAsMap: util.Map[String, AnyRef] = response.getSourceAsMap
+            override def getId: String = response.getId
+          }, clazz))
+        }
       }
     }
 

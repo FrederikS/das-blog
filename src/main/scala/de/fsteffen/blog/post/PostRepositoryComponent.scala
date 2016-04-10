@@ -7,7 +7,7 @@ trait PostRepositoryComponent {
 
   trait PostRepository {
     def save(blogText: Post):Future[String]
-    def findById(id:String):Future[Post]
+    def findById(id:String):Future[Option[Post]]
     def findAll:Future[Seq[Post]]
   }
 }

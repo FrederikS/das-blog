@@ -23,8 +23,29 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
 
       (postRepository.findAll _).when().returns(Future(allPosts))
       Get("/posts") ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 200
         responseAs[JsArray] should be(allPosts.toJson)
       }
+    }
+
+    "retrieve post by id with GET /posts/{id}" in {
+      val postForId = post.Post("1", "content", "title", 1, System.currentTimeMillis())
+
+      (postRepository.findById _).when("1").returns(Future(Option(postForId)))
+      (postRepository.findById _).when(*).returns(Future(Option.empty))
+
+      Get("/posts/1") ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 200
+        responseAs[JsObject] should be(postForId.toJson)
+      }
+
+      Get("/posts/2") ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 404
+      }
+    }
+
+    "create post with POST /posts" in {
+
     }
 
   }

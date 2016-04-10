@@ -1,5 +1,7 @@
 package de.fsteffen.blog.post
 
+import de.fsteffen.blog.elastic.core.ClientFacadeComponent
+import de.fsteffen.blog.elastic.post.ElasticBasedPostRepositoryComponent
 import org.apache.commons.io.FileUtils
 import org.scalatest.concurrent.Futures
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSuite, Matchers}
@@ -7,7 +9,7 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSuite, Matchers}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class ElasticBasedPostRepositorySpec extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with Matchers with Futures with ElasticClientEnvironment with ElasticPostRepositoryEnvironment {
+class ElasticBasedPostRepositorySpec extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with Matchers with Futures with ElasticClientEnvironment with ElasticBasedPostRepositoryComponent with ClientFacadeComponent {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -37,11 +39,11 @@ class ElasticBasedPostRepositorySpec extends FunSuite with BeforeAndAfterAll wit
       returnedBlogId <- postRepository.save(savedBlogText)
       blogForId <- postRepository.findById(returnedBlogId)
     } yield {
-      blogForId.id should equal(returnedBlogId)
-      blogForId.content should equal(savedBlogText.content)
-      blogForId.title should equal(savedBlogText.title)
-      blogForId.authorId should equal(savedBlogText.authorId)
-      blogForId.timestamp should equal(savedBlogText.timestamp)
+      blogForId.get.id should equal(returnedBlogId)
+      blogForId.get.content should equal(savedBlogText.content)
+      blogForId.get.title should equal(savedBlogText.title)
+      blogForId.get.authorId should equal(savedBlogText.authorId)
+      blogForId.get.timestamp should equal(savedBlogText.timestamp)
     }, 1.second)
 
   }
@@ -51,10 +53,10 @@ class ElasticBasedPostRepositorySpec extends FunSuite with BeforeAndAfterAll wit
       returnedBlogId <- postRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
       blogText <- postRepository.findById(returnedBlogId)
     } yield {
-      blogText.content = "new content"
-      Await.result(postRepository.save(blogText), 1.second)
-      val updatedBlogTextFromDb: Post = Await.result(postRepository.findById(returnedBlogId), 1.second)
-      updatedBlogTextFromDb.id should equal(blogText.id)
+      blogText.get.content = "new content"
+      Await.result(postRepository.save(blogText.get), 1.second)
+      val updatedBlogTextFromDb: Post = Await.result(postRepository.findById(returnedBlogId), 1.second).get
+      updatedBlogTextFromDb.id should equal(blogText.get.id)
       updatedBlogTextFromDb.content should equal("new content")
     }, 1.second)
   }
