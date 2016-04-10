@@ -1,4 +1,4 @@
-package de.fsteffen.blog.text
+package de.fsteffen.blog.post
 
 import org.apache.commons.io.FileUtils
 import org.scalatest.concurrent.Futures
@@ -7,7 +7,7 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSuite, Matchers}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with Matchers with Futures with ElasticClientEnvironment with ElasticBlogTextRepositoryEnvironment {
+class ElasticBasedPostRepositorySpec extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with Matchers with Futures with ElasticClientEnvironment with ElasticPostRepositoryEnvironment {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -21,12 +21,12 @@ class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll
   }
 
   test("testSave") {
-    val savedBlogId: String = Await.result(blogTextRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText), 1.second)
+    val savedBlogId: String = Await.result(postRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText), 1.second)
     savedBlogId should not be empty
   }
 
   test("testFindByid") {
-    val savedBlogText: BlogText = BlogText(
+    val savedBlogText: Post = Post(
       content = "content",
       title = "title",
       authorId = 1,
@@ -34,8 +34,8 @@ class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll
     )
 
     Await.result(for {
-      returnedBlogId <- blogTextRepository.save(savedBlogText)
-      blogForId <- blogTextRepository.findById(returnedBlogId)
+      returnedBlogId <- postRepository.save(savedBlogText)
+      blogForId <- postRepository.findById(returnedBlogId)
     } yield {
       blogForId.id should equal(returnedBlogId)
       blogForId.content should equal(savedBlogText.content)
@@ -48,12 +48,12 @@ class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll
 
   test("testUpdateBlog") {
     Await.result(for {
-      returnedBlogId <- blogTextRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
-      blogText <- blogTextRepository.findById(returnedBlogId)
+      returnedBlogId <- postRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
+      blogText <- postRepository.findById(returnedBlogId)
     } yield {
       blogText.content = "new content"
-      Await.result(blogTextRepository.save(blogText), 1.second)
-      val updatedBlogTextFromDb: BlogText = Await.result(blogTextRepository.findById(returnedBlogId), 1.second)
+      Await.result(postRepository.save(blogText), 1.second)
+      val updatedBlogTextFromDb: Post = Await.result(postRepository.findById(returnedBlogId), 1.second)
       updatedBlogTextFromDb.id should equal(blogText.id)
       updatedBlogTextFromDb.content should equal("new content")
     }, 1.second)
@@ -61,18 +61,18 @@ class ElasticBasedBlogTextRepositorySpec extends FunSuite with BeforeAndAfterAll
 
   test("testFindAll") {
     Await.result(for {
-      id1 <- blogTextRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
-      id2 <- blogTextRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
+      id1 <- postRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
+      id2 <- postRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
     } yield {
       elasticNode.client().admin().indices().prepareRefresh().execute().actionGet()
-      val allBlogTexts: Seq[BlogText] = Await.result(blogTextRepository.findAll, 1.second)
+      val allBlogTexts: Seq[Post] = Await.result(postRepository.findAll, 1.second)
       allBlogTexts should have size 2
     }, 1.second)
   }
 
   private object ElasticBasedBlogTextRepositorySpec {
-    def anyBlogText: BlogText = {
-      BlogText(
+    def anyBlogText: Post = {
+      Post(
         content = "content",
         title = "title",
         authorId = 1,

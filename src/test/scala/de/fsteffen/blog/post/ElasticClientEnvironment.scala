@@ -1,4 +1,4 @@
-package de.fsteffen.blog.text
+package de.fsteffen.blog.post
 
 import java.io.File
 
