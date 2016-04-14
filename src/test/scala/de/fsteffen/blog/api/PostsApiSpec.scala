@@ -55,7 +55,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
       ).toString)
 
       (postRepository.save _).expects(where { post:Post =>
-        post.content.equals("content") && //""content""
+        post.content.equals("content") &&
           post.title.equals("title") &&
           post.authorId.equals("1") &&
           post.timestamp > 0
