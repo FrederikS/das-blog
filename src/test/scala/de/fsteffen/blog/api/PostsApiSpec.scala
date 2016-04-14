@@ -14,7 +14,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
 
   override val postRepository = mock[PostRepository]
 
-  "UsersApi" should {
+  "PostsApi" should {
 
     "retrieve all posts with GET /posts" in {
       val allPosts = Seq(
