@@ -6,7 +6,7 @@ import de.fsteffen.blog.elastic.core.Entity
 case class Post(@JsonProperty("id") id: String = null,
                 @JsonProperty("content") var content: String,
                 @JsonProperty("title") var title: String,
-                @JsonProperty("authorId") authorId: Int,
+                @JsonProperty("authorId") authorId: String,
                 @JsonProperty("timestamp") timestamp: Long) extends Entity {
   override def getId: String = id
 }

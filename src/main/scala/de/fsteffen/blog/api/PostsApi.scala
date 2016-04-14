@@ -26,5 +26,15 @@ trait PostsApi extends SprayJsonSupport with DefaultJsonProtocol {
         case None => HttpResponse(StatusCodes.NotFound)
       }
       onSuccess(response) { res => complete(res) }
+    } ~
+    (path("posts") & post) { entity(as[JsObject]) { postData =>
+        complete(postRepository.save(Post(
+          content = postData.fields("content").convertTo[String],
+          title = postData.fields("title").convertTo[String],
+          authorId = postData.fields("authorId").convertTo[String],
+          timestamp = System.currentTimeMillis()
+        )))
+      }
     }
+
 }

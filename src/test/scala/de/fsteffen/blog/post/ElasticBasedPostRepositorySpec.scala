@@ -31,7 +31,7 @@ class ElasticBasedPostRepositorySpec extends FunSuite with BeforeAndAfterAll wit
     val savedBlogText: Post = Post(
       content = "content",
       title = "title",
-      authorId = 1,
+      authorId = "1",
       timestamp = System.currentTimeMillis()
     )
 
@@ -77,7 +77,7 @@ class ElasticBasedPostRepositorySpec extends FunSuite with BeforeAndAfterAll wit
       Post(
         content = "content",
         title = "title",
-        authorId = 1,
+        authorId = "1",
         timestamp = System.currentTimeMillis()
       )
     }
