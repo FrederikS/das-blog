@@ -54,15 +54,52 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
         "authorId" -> JsString("1")
       ).toString)
 
-      (postRepository.save _).expects(where { post:Post =>
+      (postRepository.save _).expects(where { post: Post =>
         post.content.equals("content") &&
-          post.title.equals("title") &&
-          post.authorId.equals("1") &&
-          post.timestamp > 0
+        post.title.equals("title") &&
+        post.authorId.equals("1") &&
+        post.timestamp > 0
       }).returning(Future("1"))
 
       Post("/posts", postEntity) ~> postRoutes ~> check {
         response.status.intValue shouldEqual 200
+      }
+    }
+
+    "update post with PUT /posts/{id}" in {
+      val putEntity = HttpEntity(MediaTypes.`application/json`, JsObject(
+        "content" -> JsString("newContent"),
+        "title" -> JsString("newTitle"),
+        "authorId" -> JsString("1")
+      ).toString)
+
+      val postToUpdate: Post = post.Post("1", "content", "title", "1", System.currentTimeMillis())
+      (postRepository.findById _).expects("1").returns(Future(Option(postToUpdate)))
+
+      (postRepository.save _).expects(where { updatedPost: Post =>
+        updatedPost.id.equals("1") &&
+        updatedPost.content.equals("newContent") &&
+        updatedPost.title.equals("newTitle") &&
+        updatedPost.authorId.equals("1") &&
+        updatedPost.timestamp > postToUpdate.timestamp
+      }).returning(Future("1"))
+
+      Put("/posts/1", putEntity) ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 200
+      }
+    }
+
+    "update post with id not exists should return 404" in {
+      val putEntity = HttpEntity(MediaTypes.`application/json`, JsObject(
+        "content" -> JsString("content"),
+        "title" -> JsString("title"),
+        "authorId" -> JsString("1")
+      ).toString)
+
+      (postRepository.findById _).expects("1").returns(Future(Option.empty))
+
+      Put("/posts/1", putEntity) ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 404
       }
     }
 
