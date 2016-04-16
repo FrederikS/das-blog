@@ -72,6 +72,18 @@ class ElasticBasedPostRepositorySpec extends FunSuite with BeforeAndAfterAll wit
     }, 1.second)
   }
 
+  test("testDelete") {
+    Await.result(for {
+      savedPostId <- postRepository.save(ElasticBasedBlogTextRepositorySpec.anyBlogText)
+      removedPostId <- postRepository.delete(savedPostId)
+    } yield {
+      removedPostId shouldEqual savedPostId
+      elasticNode.client().admin().indices().prepareRefresh().execute().actionGet()
+      val postsForId: Option[Post] = Await.result(postRepository.findById(savedPostId), 1.second)
+      postsForId.isEmpty shouldBe true
+    }, 1.second)
+  }
+
   private object ElasticBasedBlogTextRepositorySpec {
     def anyBlogText: Post = {
       Post(

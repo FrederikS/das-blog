@@ -20,7 +20,7 @@ trait ClientFacadeComponent { this: ClientComponent =>
     private val _objectMapper: ObjectMapper = new ObjectMapper() with ScalaObjectMapper registerModule DefaultScalaModule
 
     client.admin().indices().prepareCreate("test")
-      .addMapping("blog", Source.fromInputStream(getClass.getResourceAsStream("/de/fsteffen/blog/elastic/blogtext-mapping.json")).mkString)
+      .addMapping("posts", Source.fromInputStream(getClass.getResourceAsStream("/de/fsteffen/blog/elastic/posts-mapping.json")).mkString)
       .execute().get()
 
     def saveDocument[T <: Entity](index: String, typee: String, doc: T): Future[String] = {
@@ -52,6 +52,14 @@ trait ClientFacadeComponent { this: ClientComponent =>
           override def getId: String = hit.getId
         }, clazz))
           .toSeq
+      }
+    }
+
+    def deleteDocument[T <: Entity](index: String, typee: String, id:String): Future[String] = {
+      Future {
+        client.prepareDelete(index, typee, id)
+          .get()
+          .getId
       }
     }
 

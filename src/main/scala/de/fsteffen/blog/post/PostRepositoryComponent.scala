@@ -9,5 +9,6 @@ trait PostRepositoryComponent {
     def save(post: Post):Future[String]
     def findById(id:String):Future[Option[Post]]
     def findAll:Future[Seq[Post]]
+    def delete(postId: String):Future[String]
   }
 }

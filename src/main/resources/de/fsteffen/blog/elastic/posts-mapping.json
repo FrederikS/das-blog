@@ -1,5 +1,5 @@
 {
-  "blog": {
+  "posts": {
     "_source": {
       "includes" : [
         "content",

@@ -10,16 +10,20 @@ trait ElasticBasedPostRepositoryComponent extends PostRepositoryComponent { this
   override val postRepository = new ElasticBasedPostRepository
 
   class ElasticBasedPostRepository extends PostRepository {
-    def save(blogText: Post):Future[String] = {
-      clientFacade.saveDocument("test", "blog", blogText)
+    def save(post: Post):Future[String] = {
+      clientFacade.saveDocument("test", "posts", post)
     }
 
     override def findById(id: String): Future[Option[Post]] = {
-      clientFacade.getDocument("test", "blog", id, classOf[Post])
+      clientFacade.getDocument("test", "posts", id, classOf[Post])
     }
 
     override def findAll: Future[Seq[Post]] = {
-      clientFacade.getDocuments("test", "blog", classOf[Post])
+      clientFacade.getDocuments("test", "posts", classOf[Post])
+    }
+
+    override def delete(postId: String): Future[String] = {
+      clientFacade.deleteDocument("test", "posts", postId)
     }
   }
 
