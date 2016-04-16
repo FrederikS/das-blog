@@ -5,9 +5,9 @@ version := "1.0"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= {
-  val akkaStreamVersion = "2.4.3"
+  val akkaStreamVersion = "2.4.4"
   Seq(
-    "com.typesafe.akka" %% "akka-actor" % "2.4.3",
+    "com.typesafe.akka" %% "akka-actor" % "2.4.4",
     "com.typesafe.akka" %% "akka-http-experimental" % akkaStreamVersion,
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaStreamVersion,
     "org.elasticsearch" % "elasticsearch" % "2.2.1",
