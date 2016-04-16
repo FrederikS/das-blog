@@ -9,6 +9,7 @@ import org.scalatest.{Matchers, WordSpec}
 import spray.json.{JsArray, JsString, _}
 
 import scala.concurrent.Future
+import scala.util.Try
 
 class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with PostsApi with PostRepositoryComponent with MockFactory {
 
@@ -21,7 +22,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
         post.Post("1", "content", "title", "1", System.currentTimeMillis()),
         post.Post("2", "content 2", "title 2", "1", System.currentTimeMillis())
       )
-      (postRepository.findAll _).expects().returns(Future(allPosts))
+      (postRepository.findAll _).expects().returns(Future(Try(allPosts)))
 
       Get("/posts") ~> postRoutes ~> check {
         response.status.intValue shouldEqual 200
@@ -31,7 +32,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
 
     "retrieve post by id with GET /posts/{id}" in {
       val postForId = post.Post("1", "content", "title", "1", System.currentTimeMillis())
-      (postRepository.findById _).expects("1").returns(Future(Option(postForId)))
+      (postRepository.findById _).expects("1").returns(Future(Try(Option(postForId))))
 
       Get("/posts/1") ~> postRoutes ~> check {
         response.status.intValue shouldEqual 200
@@ -40,7 +41,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
     }
 
     "return not found when GET /posts/{id} not exists" in {
-      (postRepository.findById _).expects("1").returns(Future(Option.empty))
+      (postRepository.findById _).expects("1").returns(Future(Try(Option.empty)))
 
       Get("/posts/1") ~> postRoutes ~> check {
         response.status.intValue shouldEqual 404
@@ -59,7 +60,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
         post.title.equals("title") &&
         post.authorId.equals("1") &&
         post.timestamp > 0
-      }).returning(Future("1"))
+      }).returning(Future(Try("1")))
 
       Post("/posts", postEntity) ~> postRoutes ~> check {
         response.status.intValue shouldEqual 200
@@ -74,7 +75,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
       ).toString)
 
       val postToUpdate: Post = post.Post("1", "content", "title", "1", System.currentTimeMillis())
-      (postRepository.findById _).expects("1").returns(Future(Option(postToUpdate)))
+      (postRepository.findById _).expects("1").returns(Future(Try(Option(postToUpdate))))
 
       (postRepository.save _).expects(where { updatedPost: Post =>
         updatedPost.id.equals("1") &&
@@ -82,7 +83,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
         updatedPost.title.equals("newTitle") &&
         updatedPost.authorId.equals("1") &&
         updatedPost.timestamp > postToUpdate.timestamp
-      }).returning(Future("1"))
+      }).returning(Future(Try("1")))
 
       Put("/posts/1", putEntity) ~> postRoutes ~> check {
         response.status.intValue shouldEqual 200
@@ -96,7 +97,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
         "authorId" -> JsString("1")
       ).toString)
 
-      (postRepository.findById _).expects("1").returns(Future(Option.empty))
+      (postRepository.findById _).expects("1").returns(Future(Try(Option.empty)))
 
       Put("/posts/1", putEntity) ~> postRoutes ~> check {
         response.status.intValue shouldEqual 404
@@ -104,10 +105,10 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
     }
 
     "delete postId with DELETE /posts/{id}" in {
-      (postRepository.findById _).expects("1").returns(Future(Option(
+      (postRepository.findById _).expects("1").returns(Future(Try(Option(
         post.Post("1", "content", "title", "1", System.currentTimeMillis())
-      )))
-      (postRepository.delete _).expects("1").returns(Future("1"))
+      ))))
+      (postRepository.delete _).expects("1").returns(Future(Try("1")))
 
       Delete("/posts/1") ~> postRoutes ~> check {
         response.status.intValue shouldEqual 200
@@ -115,7 +116,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
     }
 
     "delete postId with id not exists should return 404" in {
-      (postRepository.findById _).expects("1").returns(Future(Option.empty))
+      (postRepository.findById _).expects("1").returns(Future(Try(Option.empty)))
 
       Delete("/posts/1") ~> postRoutes ~> check {
         response.status.intValue shouldEqual 404
