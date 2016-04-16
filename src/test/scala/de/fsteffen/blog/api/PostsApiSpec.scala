@@ -103,6 +103,25 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
       }
     }
 
+    "delete postId with DELETE /posts/{id}" in {
+      (postRepository.findById _).expects("1").returns(Future(Option(
+        post.Post("1", "content", "title", "1", System.currentTimeMillis())
+      )))
+      (postRepository.delete _).expects("1").returns(Future("1"))
+
+      Delete("/posts/1") ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 200
+      }
+    }
+
+    "delete postId with id not exists should return 404" in {
+      (postRepository.findById _).expects("1").returns(Future(Option.empty))
+
+      Delete("/posts/1") ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 404
+      }
+    }
+
   }
 
 }

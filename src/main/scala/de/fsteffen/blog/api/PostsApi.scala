@@ -41,6 +41,13 @@ trait PostsApi extends SprayJsonSupport with DefaultJsonProtocol {
           }
           onSuccess(response) { res => complete(res) }
         }
+      } ~
+      delete {
+        val response: Future[ToResponseMarshallable] = postRepository.findById(id).map {
+          case Some(postToDelete) => postRepository.delete(postToDelete.id)
+          case None => HttpResponse(StatusCodes.NotFound)
+        }
+        onSuccess(response) { res => complete(res) }
       }
     } ~
     (path("posts") & post) { entity(as[JsObject]) { postData =>
