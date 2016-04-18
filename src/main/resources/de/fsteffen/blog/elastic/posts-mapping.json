@@ -4,7 +4,6 @@
       "includes" : [
         "content",
         "title",
-        "authorId",
         "timestamp"
       ],
       "excludes": [

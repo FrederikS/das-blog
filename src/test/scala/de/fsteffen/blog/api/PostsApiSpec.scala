@@ -19,8 +19,8 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
 
     "retrieve all posts with GET /posts" in {
       val allPosts = Seq(
-        post.Post("1", "content", "title", "1", System.currentTimeMillis()),
-        post.Post("2", "content 2", "title 2", "1", System.currentTimeMillis())
+        post.Post("1", "content", "title", System.currentTimeMillis()),
+        post.Post("2", "content 2", "title 2", System.currentTimeMillis())
       )
       (postRepository.findAll _).expects().returns(Future(Try(allPosts)))
 
@@ -31,7 +31,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
     }
 
     "retrieve post by id with GET /posts/{id}" in {
-      val postForId = post.Post("1", "content", "title", "1", System.currentTimeMillis())
+      val postForId = post.Post("1", "content", "title", System.currentTimeMillis())
       (postRepository.findById _).expects("1").returns(Future(Try(Option(postForId))))
 
       Get("/posts/1") ~> postRoutes ~> check {
@@ -51,14 +51,12 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
     "create post with POST /posts" in {
       val postEntity = HttpEntity(MediaTypes.`application/json`, JsObject(
         "content" -> JsString("content"),
-        "title" -> JsString("title"),
-        "authorId" -> JsString("1")
+        "title" -> JsString("title")
       ).toString)
 
       (postRepository.save _).expects(where { post: Post =>
         post.content.equals("content") &&
         post.title.equals("title") &&
-        post.authorId.equals("1") &&
         post.timestamp > 0
       }).returning(Future(Try("1")))
 
@@ -70,18 +68,16 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
     "update post with PUT /posts/{id}" in {
       val putEntity = HttpEntity(MediaTypes.`application/json`, JsObject(
         "content" -> JsString("newContent"),
-        "title" -> JsString("newTitle"),
-        "authorId" -> JsString("1")
+        "title" -> JsString("newTitle")
       ).toString)
 
-      val postToUpdate: Post = post.Post("1", "content", "title", "1", System.currentTimeMillis())
+      val postToUpdate: Post = post.Post("1", "content", "title", System.currentTimeMillis())
       (postRepository.findById _).expects("1").returns(Future(Try(Option(postToUpdate))))
 
       (postRepository.save _).expects(where { updatedPost: Post =>
         updatedPost.id.equals("1") &&
         updatedPost.content.equals("newContent") &&
         updatedPost.title.equals("newTitle") &&
-        updatedPost.authorId.equals("1") &&
         updatedPost.timestamp > postToUpdate.timestamp
       }).returning(Future(Try("1")))
 
@@ -93,8 +89,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
     "update post with id not exists should return 404" in {
       val putEntity = HttpEntity(MediaTypes.`application/json`, JsObject(
         "content" -> JsString("content"),
-        "title" -> JsString("title"),
-        "authorId" -> JsString("1")
+        "title" -> JsString("title")
       ).toString)
 
       (postRepository.findById _).expects("1").returns(Future(Try(Option.empty)))
@@ -106,7 +101,7 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
 
     "delete postId with DELETE /posts/{id}" in {
       (postRepository.findById _).expects("1").returns(Future(Try(Option(
-        post.Post("1", "content", "title", "1", System.currentTimeMillis())
+        post.Post("1", "content", "title", System.currentTimeMillis())
       ))))
       (postRepository.delete _).expects("1").returns(Future(Try("1")))
 

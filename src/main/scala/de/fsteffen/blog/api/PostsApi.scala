@@ -15,7 +15,7 @@ trait PostsApi extends SprayJsonSupport with DefaultJsonProtocol {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit val postFormat = jsonFormat5(Post)
+  implicit val postFormat = jsonFormat4(Post)
 
   val postRoutes =
     path("posts") {
@@ -27,7 +27,6 @@ trait PostsApi extends SprayJsonSupport with DefaultJsonProtocol {
             val response = answerWithErrorOnExOr(postRepository.save(Post(
               content = postData.fields("content").convertTo[String],
               title = postData.fields("title").convertTo[String],
-              authorId = postData.fields("authorId").convertTo[String],
               timestamp = System.currentTimeMillis()
             )))(savedId => savedId)
             onSuccess(response) { res => complete(res) }
@@ -49,7 +48,6 @@ trait PostsApi extends SprayJsonSupport with DefaultJsonProtocol {
               id = postToUpdate.id,
               content = postData.fields("content").convertTo[String],
               title = postData.fields("title").convertTo[String],
-              authorId = postData.fields("authorId").convertTo[String],
               timestamp = System.currentTimeMillis()
             ))
             case None => HttpResponse(StatusCodes.NotFound)
