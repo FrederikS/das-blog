@@ -1,7 +1,13 @@
 package de.fsteffen.blog.api
 
-import de.fsteffen.blog.elastic.core.{ClientFacadeComponent, ElasticClient}
-import de.fsteffen.blog.elastic.post.ElasticBasedPostRepositoryComponent
+import java.net.InetAddress
 
-trait ElasticBasedPostsApiComponent extends PostsApi with ElasticClient with ElasticBasedPostRepositoryComponent with ClientFacadeComponent {
+import de.fsteffen.blog.elastic.core.{ClientComponent, ClientFacadeComponent}
+import de.fsteffen.blog.elastic.post.ElasticBasedPostRepositoryComponent
+import org.elasticsearch.client.transport.TransportClient
+import org.elasticsearch.common.transport.InetSocketTransportAddress
+
+trait ElasticBasedPostsApiComponent extends PostsApi with ElasticBasedPostRepositoryComponent with ClientFacadeComponent with ClientComponent {
+  override val client: TransportClient = TransportClient.builder().build()
+    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300))
 }

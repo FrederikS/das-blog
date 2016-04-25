@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 
 trait ClientFacadeComponent { this: ClientComponent =>
 
-  val clientFacade:ClientFacade = new ClientFacade
+  lazy val clientFacade:ClientFacade = new ClientFacade
 
   class ClientFacade {
     import scala.concurrent.ExecutionContext.Implicits.global
