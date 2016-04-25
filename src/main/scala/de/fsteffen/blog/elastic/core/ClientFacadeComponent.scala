@@ -22,9 +22,12 @@ trait ClientFacadeComponent { this: ClientComponent =>
 
     private val _objectMapper: ObjectMapper = new ObjectMapper() with ScalaObjectMapper registerModule DefaultScalaModule
 
-    client.admin().indices().prepareCreate(ClientFacade.Index)
-      .addMapping("posts", Source.fromInputStream(getClass.getResourceAsStream("/de/fsteffen/blog/elastic/posts-mapping.json")).mkString)
-      .execute().get()
+    if (!client.admin().indices().prepareExists(ClientFacade.Index)
+      .execute().get().isExists) {
+      client.admin().indices().prepareCreate(ClientFacade.Index)
+        .addMapping("posts", Source.fromInputStream(getClass.getResourceAsStream("/de/fsteffen/blog/elastic/posts-mapping.json")).mkString)
+        .execute().get()
+    }
 
     def saveDocument[T <: Entity](doc: T): Future[Try[String]] = {
       Future {

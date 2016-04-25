@@ -5,8 +5,12 @@ version := "1.0"
 scalaVersion := "2.11.7"
 
 mainClass in (Compile, run) := Some("de.fsteffen.blog.app.Boot")
+
 assemblyMergeStrategy in assembly := {
-  case _ => MergeStrategy.first
+  case PathList("org", "joda", "time", "base", "BaseDateTime.class") => MergeStrategy.first
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
 }
 
 libraryDependencies ++= {
