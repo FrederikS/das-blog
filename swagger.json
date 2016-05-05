@@ -1,0 +1,106 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Post API",
+        "description": "Everything you need to deal with Blogposts",
+        "version": "1.0"
+    },
+    "host": "localhost:9000",
+    "schemes": [
+        "http"
+    ],
+    "basePath": "/v1",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/posts": {
+            "get": {
+                "summary": "Gets all Blogposts",
+                "responses": {
+                    "200": {
+                        "description": "An array of Posts",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Post"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "title": "error-message",
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new Post",
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "description": "Post object that needs to be added to the store",
+                        "required": true,
+                        "paramType": "body",
+                        "schema": {
+                            "$ref": "#/definitions/PostBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created Post-ID",
+                        "schema": {
+                            "type": "string",
+                            "title": "post-id"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Post": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier representing a specific post"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "HTML-Content of post."
+                },
+                "title": {
+                    "type": "string",
+                    "description": "title of post."
+                },
+                "timestamp": {
+                    "type": "string",
+                    "description": "last update timestamp."
+                }
+            }
+        },
+        "PostBody": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "HTML-Content of post."
+                },
+                "title": {
+                    "type": "string",
+                    "description": "title of post."
+                }
+            }
+        },
+        "Error": {
+            "type": "string"
+        }
+    }
+}
