@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import de.fsteffen.blog.post.Post
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.search.SearchResponse
+import org.elasticsearch.search.sort.SortOrder
 
 import scala.concurrent.Future
 import scala.io.Source
@@ -75,12 +76,23 @@ trait ClientFacadeComponent { this: ClientComponent =>
       }
     }
 
-    def getDocuments[T <: Entity](clazz: Class[T]): Future[Try[Seq[T]]] = {
+    def getDocuments[T <: Entity](clazz: Class[T]): Future[Try[Seq[T]]] = getDocuments(clazz, None)
+
+    def getDocuments[T <: Entity](clazz: Class[T], sort: Option[Sort]): Future[Try[Seq[T]]] = {
       Future {
         Try {
           getTypeForClass(clazz) match {
             case Success(typeForClass) =>
-              val response: SearchResponse = client.prepareSearch(ClientFacade.Index).setTypes(typeForClass).get()
+              val req = client.prepareSearch(ClientFacade.Index).setTypes(typeForClass)
+              val response: SearchResponse = sort match {
+                case Some(s) if s.ascending => req
+                  .addSort(s.field, SortOrder.ASC)
+                  .get()
+                case Some(s) => req
+                  .addSort(s.field, SortOrder.DESC)
+                  .get()
+                case _ => req.get()
+              }
               response.getHits.getHits.map(hit => fromJson(new SourceAndIdProvider {
                 override def getSourceAsMap: util.Map[String, AnyRef] = hit.getSource
                 override def getId: String = hit.getId

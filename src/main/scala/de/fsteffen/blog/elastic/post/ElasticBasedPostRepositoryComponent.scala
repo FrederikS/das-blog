@@ -1,7 +1,7 @@
 package de.fsteffen.blog.elastic.post
 
 import de.fsteffen.blog.elastic.core.ClientFacadeComponent
-import de.fsteffen.blog.post.{Post, PostRepositoryComponent}
+import de.fsteffen.blog.post.{Post, PostQuery, PostRepositoryComponent}
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -19,7 +19,11 @@ trait ElasticBasedPostRepositoryComponent extends PostRepositoryComponent { this
       clientFacade.getDocument(id, classOf[Post])
     }
 
-    override def findAll: Future[Try[Seq[Post]]] = {
+    override def findAll(): Future[Try[Seq[Post]]] = {
+      clientFacade.getDocuments(classOf[Post])
+    }
+
+    override def findBy(query: PostQuery): Future[Try[Seq[Post]]] = {
       clientFacade.getDocuments(classOf[Post])
     }
 

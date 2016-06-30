@@ -3,10 +3,12 @@ package de.fsteffen.blog.api
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.fsteffen.blog.post
-import de.fsteffen.blog.post.{Post, PostRepositoryComponent}
+import de.fsteffen.blog.post.{Post, PostQuery, PostRepositoryComponent}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import spray.json.{JsArray, JsString, _}
+import com.github.nscala_time.time.Imports._
+import de.fsteffen.blog.elastic.core.Sort
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -115,6 +117,28 @@ class PostsApiSpec extends WordSpec with Matchers with ScalatestRouteTest with P
 
       Delete("/posts/1") ~> postRoutes ~> check {
         response.status.intValue shouldEqual 404
+      }
+    }
+
+    "retrieve all posts sorted by date ascending" in {
+      val post1 = post.Post("1", "content", "title", DateTime.now.getMillis)
+      val post2 = post.Post("2", "content 2", "title 2", DateTime.now.plusDays(1).getMillis)
+
+      (postRepository.findBy _).expects(PostQuery(Sort("date", ascending = true))).returns(Future(Try(Seq())))
+
+      Get("/posts?sort=date") ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 200
+      }
+    }
+
+    "retrieve all posts sorted by date descending" in {
+      val post1 = post.Post("1", "content", "title", DateTime.now.getMillis)
+      val post2 = post.Post("2", "content 2", "title 2", DateTime.now.minusDays(1).getMillis)
+
+      (postRepository.findBy _).expects(PostQuery(Sort("date", ascending = false))).returns(Future(Try(Seq())))
+
+      Get("/posts?sort=-date") ~> postRoutes ~> check {
+        response.status.intValue shouldEqual 200
       }
     }
 

@@ -4,7 +4,8 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import de.fsteffen.blog.post.{Post, PostRepositoryComponent}
+import de.fsteffen.blog.elastic.core.Sort
+import de.fsteffen.blog.post.{Post, PostQuery, PostRepositoryComponent}
 import spray.json.{DefaultJsonProtocol, _}
 
 import scala.concurrent.Future
@@ -20,8 +21,14 @@ trait PostsApi extends SprayJsonSupport with DefaultJsonProtocol {
   val postRoutes =
     path("posts") {
       get {
-        val response = answerWithErrorOnExOr(postRepository.findAll)(_.toJson)
-        onSuccess(response) { res => complete(res) }
+        parameters("sort".?) { sort =>
+          val repoCall = getPostQueryFor(sort) match {
+            case Some(query) => postRepository.findBy(query)
+            case None => postRepository.findAll()
+          }
+          val response = answerWithErrorOnExOr(repoCall)(_.toJson)
+          onSuccess(response) { res => complete(res) }
+        }
       } ~
         post { entity(as[JsObject]) { postData =>
             val response = answerWithErrorOnExOr(postRepository.save(Post(
@@ -68,6 +75,16 @@ trait PostsApi extends SprayJsonSupport with DefaultJsonProtocol {
     futureOperation map {
       case Success(data) => mapper(data)
       case Failure(ex) => HttpResponse(StatusCodes.InternalServerError, entity = HttpEntity(ex.getMessage))
+    }
+  }
+
+  private def getPostQueryFor(sortParam: Option[String]): Option[PostQuery] = {
+    sortParam match {
+      case Some(sort) => sort match {
+        case sortString if sortString.startsWith("-") => Option(PostQuery(Sort(sortString.substring(1), ascending = false)))
+        case _ => Option(PostQuery(Sort(sort, ascending = true)))
+      }
+      case None => None
     }
   }
 

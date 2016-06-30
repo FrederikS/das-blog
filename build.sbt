@@ -20,6 +20,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-experimental" % akkaStreamVersion,
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaStreamVersion,
     "ch.megard" %% "akka-http-cors" % "0.1.1",
+    "com.github.nscala-time" %% "nscala-time" % "2.12.0",
     "org.elasticsearch" % "elasticsearch" % "2.2.1",
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.7.3",
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.2",
